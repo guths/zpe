@@ -24,6 +24,7 @@ func InitializeRouter() (router *gin.Engine) {
 
 		user := v1route.Group("/user")
 		{
+			user.POST("/", utils.ModifierOnly, utils.AuthOnly, v1.POSTUser)
 			user.GET("/:email", utils.AuthOnly, v1.GETUser)
 			user.DELETE("/:email", utils.ModifierOnly, utils.AuthOnly, v1.DELETEUser)
 			user.PUT("/:email", utils.ModifierOnly, utils.AuthOnly, v1.PUTUser)

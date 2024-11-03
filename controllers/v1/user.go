@@ -135,7 +135,7 @@ func POSTUser(c *gin.Context) {
 	res := handlers.Handler.RegisterUser(userInfo)
 
 	if res.Error != "" {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "fail to create user"})
+		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: res.Error})
 		return
 	}
 
