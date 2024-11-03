@@ -26,6 +26,7 @@ func InitializeRouter() (router *gin.Engine) {
 		{
 			user.GET("/:email", utils.AuthOnly, v1.GETUser)
 			user.DELETE("/:email", utils.ModifierOnly, utils.AuthOnly, v1.DELETEUser)
+			user.PUT("/:email", utils.ModifierOnly, utils.AuthOnly, v1.PUTUser)
 		}
 	}
 	return

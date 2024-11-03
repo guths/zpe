@@ -49,13 +49,22 @@ func (m *Module) DeleteUser(email string) datatransfers.Response {
 	}
 }
 
-func (m *Module) UpdateUser(id uint, user datatransfers.UserUpdate) (err error) {
-	if err = m.Db.userOrmer.UpdateUser(models.User{
-		ID:       id,
-		Username: user.Username,
-	}); err != nil {
-		return fmt.Errorf("error updating the user")
+func (m *Module) UpdateUser(id uint, user datatransfers.UserUpdate) (*models.User, error) {
+	roles, err := m.Db.roleOrmer.GetManyByName(user.Roles)
+
+	if err != nil {
+		return nil, fmt.Errorf("error getting the roles")
 	}
 
-	return
+	updatedUser, err := m.Db.userOrmer.UpdateUser(models.User{
+		ID:       id,
+		Username: user.Username,
+		Roles:    roles,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error updating the user")
+	}
+
+	return &updatedUser, nil
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -24,7 +25,7 @@ type UserOrmer interface {
 	GetOneByID(id uint) (user User, err error)
 	GetOneByEmail(email string) (User, error)
 	InsertUser(user User) (u User, err error)
-	UpdateUser(user User) (err error)
+	UpdateUser(user User) (User, error)
 	DeleteOneByEmail(email string) error
 }
 
@@ -55,9 +56,14 @@ func (o *userOrm) InsertUser(user User) (u User, err error) {
 	return user, result.Error
 }
 
-func (o *userOrm) UpdateUser(user User) (err error) {
+func (o *userOrm) UpdateUser(user User) (User, error) {
+	fmt.Println(user.Roles)
+	if len(user.Roles) > 0 {
+		o.db.Model(&User{}).Model(&user).Association("Roles").Replace(user.Roles)
+	}
+
 	result := o.db.Model(&User{}).Model(&user).Updates(&user)
-	return result.Error
+	return user, result.Error
 }
 
 func (o *userOrm) DeleteOneByEmail(email string) error {

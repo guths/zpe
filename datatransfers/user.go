@@ -20,8 +20,11 @@ type UserInfo struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type UserUpdateURI struct {
+	Email string `binding:"required" uri:"email"`
+}
+
 type UserUpdate struct {
-	Username string   `json:"username" binding:"-"`
-	Email    string   `json:"email" uri:"email"`
-	Roles    []string `json:"roles" binding:"-"`
+	Username string   `json:"username" binding:"required"`
+	Roles    []string `json:"roles" binding:"required"`
 }
