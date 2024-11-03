@@ -15,7 +15,7 @@ type HandlerFunc interface {
 	DeleteUser(email string) (res datatransfers.Response)
 	RetrieveUser(email string) (*models.User, error)
 	ValidateUserRoles(userRoleLvl int, roles []string) bool
-	// UpdateUser(id uint, user datatransfers.UserUpdate) (err error)
+	UpdateUser(id uint, user datatransfers.UserUpdate) (err error)
 }
 
 type Module struct {
