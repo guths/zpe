@@ -46,9 +46,7 @@ services:
     ports:
       - "3306:3306"
   mysql_test:
-    build:
-      context: .
-      dockerfile: .docker/mysql/Dockerfile
+    image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: root

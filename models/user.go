@@ -13,10 +13,10 @@ type userOrm struct {
 
 type User struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
-	Username  string    `gorm:"type:varchar(100);size:100" json:"username"`
-	Email     string    `gorm:"unique" json:"email"`
+	Username  string    `gorm:"type:varchar(100);size:100" json:"username" faker:"username"`
+	Email     string    `gorm:"unique" json:"email" faker:"email"`
 	Password  string    `json:"-"`
-	Roles     []Role    `gorm:"many2many:user_roles;constraint:OnDelete:CASCADE;" json:"roles"`
+	Roles     []Role    `gorm:"many2many:user_roles;constraint:OnDelete:CASCADE;" faker:"-" json:"roles"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
