@@ -20,8 +20,6 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("running on port %d \n", config.AppConfig.Port)
-
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%d", config.AppConfig.Port),
 		Handler:        router.InitializeRouter(),

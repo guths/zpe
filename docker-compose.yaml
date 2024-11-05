@@ -5,12 +5,14 @@ services:
       context: .
       target: base
     working_dir: /app
-    command: go test -p=1 ./...
+    command: go test -v ./...
     environment:
       - MYSQL_HOST=mysql_test
       - MYSQL_USER=zpe_test
       - MYSQL_PASSWORD=zpe_test
       - MYSQL_DATABASE=zpe_test
+      - MYSQL_PORT=3306
+      - JWT_SECRET=secret
     volumes:
       - .:/app
     depends_on:
@@ -50,9 +52,9 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: zpe
-      MYSQL_USER: zpe
-      MYSQL_PASSWORD: zpe
+      MYSQL_DATABASE: zpe_test
+      MYSQL_USER: zpe_test
+      MYSQL_PASSWORD: zpe_test
       TZ: "America/Sao_Paulo"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-uroot", "-proot"]

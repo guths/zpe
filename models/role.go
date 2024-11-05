@@ -18,10 +18,10 @@ type roleOrm struct {
 
 type RoleOrmer interface {
 	GetManyByName(names []string) ([]Role, error)
+	InsertRole(role Role) (Role, error)
 }
 
 func NewRoleOrmer(db *gorm.DB) RoleOrmer {
-
 	err := db.AutoMigrate(&Role{})
 
 	if err != nil {
@@ -36,6 +36,11 @@ func (o *roleOrm) GetManyByName(names []string) ([]Role, error) {
 	result := o.db.Where("name IN ?", names).Find(&roles)
 
 	return roles, result.Error
+}
+
+func (o *roleOrm) InsertRole(role Role) (Role, error) {
+	result := o.db.Model(&Role{}).Create(&role)
+	return role, result.Error
 }
 
 func GetMaxRoleLvl(roles []Role) int {

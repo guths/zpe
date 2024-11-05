@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
@@ -25,6 +26,7 @@ type Config struct {
 func InitializeAppConfig() {
 	viper.AutomaticEnv()
 
+	fmt.Println("está passsando aqui antes?")
 	AppConfig.Port = viper.GetInt("PORT")
 	AppConfig.Environment = viper.GetString("ENVIRONMENT")
 	AppConfig.Debug = viper.GetBool("DEBUG")
@@ -36,6 +38,5 @@ func InitializeAppConfig() {
 	AppConfig.DBPassword = viper.GetString("MYSQL_PASSWORD")
 
 	AppConfig.JWTSecret = viper.GetString("JWT_SECRET")
-
 	log.Println("[INIT] configuration loaded")
 }

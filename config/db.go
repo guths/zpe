@@ -27,10 +27,21 @@ func (manager *dbManager) GetDB() *gorm.DB {
 		)
 
 		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-
 		if err != nil {
 			log.Fatalf("Failed to connect to MySQL database: %v", err)
 		}
+
+		sqlDB, err := db.DB()
+		if err != nil {
+			log.Fatalf("Failed to get database instance: %v", err)
+		}
+		if err := sqlDB.Ping(); err != nil {
+			log.Fatalf("Failed to ping database: %v", err)
+		}
+
+		sqlDB.SetMaxIdleConns(10)
+		sqlDB.SetMaxOpenConns(100)
+		sqlDB.SetConnMaxLifetime(0)
 
 		manager.db = db
 	})
