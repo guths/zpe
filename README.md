@@ -1,6 +1,10 @@
 # ZPE Code Challenge
 The language choice was golang due to the ease and simplicity of development.
 
+## Extras 
+
+- GitHub Actions to run the tests
+
 ## How to run
 
 #### To up the api
