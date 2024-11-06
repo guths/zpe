@@ -5,7 +5,7 @@ services:
       context: .
       target: base
     working_dir: /app
-    command: go test -v ./...
+    command: go test ./...
     environment:
       - MYSQL_HOST=mysql_test
       - MYSQL_USER=zpe_test

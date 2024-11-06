@@ -22,7 +22,6 @@ type User struct {
 }
 
 type UserOrmer interface {
-	GetOneByID(id uint) (user User, err error)
 	GetOneByEmail(email string) (User, error)
 	InsertUser(user User) (u User, err error)
 	UpdateUser(user User) (User, error)
@@ -37,12 +36,6 @@ func NewUserOrmer(db *gorm.DB) UserOrmer {
 		panic(err)
 	}
 	return &userOrm{db}
-}
-
-func (o *userOrm) GetOneByID(id uint) (User, error) {
-	var user User
-	result := o.db.Model(&User{}).Preload("Roles").Where("id = ?", id).First(&user)
-	return user, result.Error
 }
 
 func (o *userOrm) GetOneByEmail(email string) (User, error) {

@@ -14,6 +14,10 @@ import (
 	"gorm.io/gorm"
 )
 
+//This file is used in tests to rollback all the data manipulated in DB
+//this helps to avoid inconsistency between the tests
+//The TestDB have a mutex to avoid a test that truncate a table in the same time that other test is using
+
 var (
 	RouterTest     *gin.Engine
 	setupOnce      sync.Once

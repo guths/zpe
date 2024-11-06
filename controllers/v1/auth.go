@@ -8,23 +8,6 @@ import (
 	"github.com/guths/zpe/handlers"
 )
 
-func POSTRegister(c *gin.Context) {
-	var err error
-	var user datatransfers.UserSignup
-	if err = c.ShouldBind(&user); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
-	}
-
-	res := handlers.Handler.RegisterUser(user)
-
-	if res.Error != "" {
-		c.JSON(res.Code, res)
-		return
-	}
-
-	c.JSON(res.Code, res)
-}
-
 func POSTLogin(c *gin.Context) {
 	var err error
 	var user datatransfers.UserLogin

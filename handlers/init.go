@@ -9,10 +9,13 @@ import (
 
 var Handler HandlerFunc
 
+//the module have all orm models
+//this models must implement the handlers of HandlerFunc interface
+
 type HandlerFunc interface {
 	AuthenticateUser(credentials datatransfers.UserLogin) (res datatransfers.Response)
 	RegisterUser(credentials datatransfers.UserSignup) (res datatransfers.Response)
-	DeleteUser(email string) (res datatransfers.Response)
+	DeleteUser(email string) error
 	RetrieveUser(email string) (*models.User, error)
 	ValidateUserRoles(userRoleLvl int, roles []string) bool
 	UpdateUser(id uint, user datatransfers.UserUpdate) (*models.User, error)

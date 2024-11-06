@@ -14,6 +14,8 @@ type dbManager struct {
 	once sync.Once
 }
 
+//here we have a simple singleton logic to export db to the application in a safe way
+
 var DBManager = &dbManager{}
 
 func (manager *dbManager) GetDB() *gorm.DB {

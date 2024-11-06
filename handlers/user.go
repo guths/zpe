@@ -7,6 +7,8 @@ import (
 	"github.com/guths/zpe/models"
 )
 
+//validated if the user role if enough to manipulate other user role
+
 func (m *Module) ValidateUserRoles(userRoleLvl int, roles []string) bool {
 	if len(roles) == 0 {
 		return true
@@ -33,20 +35,14 @@ func (m *Module) RetrieveUser(email string) (*models.User, error) {
 	return &user, err
 }
 
-func (m *Module) DeleteUser(email string) datatransfers.Response {
+func (m *Module) DeleteUser(email string) error {
 	err := m.Db.userOrmer.DeleteOneByEmail(email)
 
 	if err != nil {
-		return datatransfers.Response{
-			Code:  404,
-			Error: "can not find user",
-		}
+		return err
 	}
 
-	return datatransfers.Response{
-		Message: "user sucessfully deleted",
-		Code:    200,
-	}
+	return nil
 }
 
 func (m *Module) UpdateUser(id uint, user datatransfers.UserUpdate) (*models.User, error) {

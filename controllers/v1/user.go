@@ -11,6 +11,7 @@ import (
 	"github.com/guths/zpe/models"
 )
 
+// simple query by user email
 func GETUser(c *gin.Context) {
 	var err error
 	var userInfo datatransfers.UserInfo
@@ -36,6 +37,8 @@ func GETUser(c *gin.Context) {
 	})
 }
 
+// delete a user with a higher permission than the auth user is not allowed
+// is not possible to delete a user that not exists
 func DELETEUser(c *gin.Context) {
 	var err error
 	var userInfo datatransfers.UserInfo
@@ -59,16 +62,18 @@ func DELETEUser(c *gin.Context) {
 		return
 	}
 
-	res := handlers.Handler.DeleteUser(userInfo.Email)
+	err = handlers.Handler.DeleteUser(userInfo.Email)
 
-	if res.Error != "" {
-		c.JSON(http.StatusNotFound, res)
+	if err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "error deleting the user"})
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, datatransfers.Response{Message: "user sucessfully deleted"})
 }
 
+// the updated user can not have a higher permission than the authenticated user
+// is not possible to delete a user that not exists
 func PUTUser(c *gin.Context) {
 	var err error
 	var userURI datatransfers.UserUpdateURI
@@ -116,6 +121,7 @@ func PUTUser(c *gin.Context) {
 	c.JSON(http.StatusOK, datatransfers.Response{Data: updatedUser})
 }
 
+// the user that is being created can not have a higher permission than the authenticated user
 func POSTUser(c *gin.Context) {
 	var err error
 	var userInfo datatransfers.UserSignup

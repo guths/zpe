@@ -9,6 +9,8 @@ import (
 
 var AppConfig Config
 
+//this file use viber to get the env and populate a struct to be use inside the project
+
 type Config struct {
 	Port        int
 	Environment string

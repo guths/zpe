@@ -23,6 +23,8 @@ func InitializeRouter() (router *gin.Engine) {
 
 		user := v1route.Group("/user")
 		{
+			//place middleware for auth and role to allow only lvl 2 -> modifiier
+			//only get by email allow all roles to access
 			user.POST("/", utils.ModifierOnly, utils.AuthOnly, v1.POSTUser)
 			user.GET("/:email", utils.AuthOnly, v1.GETUser)
 			user.DELETE("/:email", utils.ModifierOnly, utils.AuthOnly, v1.DELETEUser)

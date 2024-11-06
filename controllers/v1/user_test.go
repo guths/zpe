@@ -10,6 +10,7 @@ import (
 	"github.com/guths/zpe/config/setup"
 	factory "github.com/guths/zpe/factory/factories"
 	"github.com/guths/zpe/models"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -189,7 +190,7 @@ func TestDELETEUser(t *testing.T) {
 	}
 
 	roleWatcher := models.Role{
-		Level: 2,
+		Level: 3,
 		Name:  "watcher",
 	}
 
@@ -241,6 +242,145 @@ func TestDELETEUserWithInvalidRole(t *testing.T) {
 	token, _ := body["data"].(string)
 
 	req := httptest.NewRequest("DELETE", fmt.Sprintf("/api/v1/user/%s", userToDelete.Email), nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	w = httptest.NewRecorder()
+	setup.RouterTest.ServeHTTP(w, req)
+
+	require.Equal(t, 401, w.Code)
+
+	var b map[string]interface{}
+	json.NewDecoder(w.Body).Decode(&b)
+
+	message, _ := b["error"].(string)
+
+	require.Equal(t, "permission denied", message)
+}
+
+func TestPOSTUser(t *testing.T) {
+	testDB, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	roleAdmin := models.Role{
+		Level: 1,
+		Name:  "admin",
+	}
+
+	roleModifier := models.Role{
+		Level: 2,
+		Name:  "modifier",
+	}
+
+	roleOrm := models.NewRoleOrmer(testDB.DB)
+
+	_, _ = roleOrm.InsertRole(roleModifier)
+
+	user := createRoleAndUser(t, testDB.DB, "password", []models.Role{roleAdmin})
+
+	w, body := performLoginRequest(user.Email, "password")
+
+	require.Equal(t, 200, w.Code)
+
+	token, _ := body["data"].(string)
+
+	payload := `{"username": "zpe","email": "zpe@zpe.com","password": "zpe","roles": ["modifier"]}`
+
+	req := httptest.NewRequest("POST", "/api/v1/user/", strings.NewReader(payload))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	w = httptest.NewRecorder()
+	setup.RouterTest.ServeHTTP(w, req)
+
+	require.Equal(t, 200, w.Code)
+
+	userOrm := models.NewUserOrmer(testDB.DB)
+
+	u, err := userOrm.GetOneByEmail("zpe@zpe.com")
+
+	require.NoError(t, err)
+
+	require.Equal(t, "zpe@zpe.com", u.Email)
+	require.Equal(t, "zpe", u.Username)
+	assert.NotEmpty(t, u.Roles)
+	assert.Equal(t, u.Roles[0].Name, "modifier")
+}
+
+func TestPOSTUserWithHighPermission(t *testing.T) {
+	testDB, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	roleAdmin := models.Role{
+		Level: 1,
+		Name:  "admin",
+	}
+
+	roleModifier := models.Role{
+		Level: 2,
+		Name:  "modifier",
+	}
+
+	roleOrm := models.NewRoleOrmer(testDB.DB)
+
+	_, _ = roleOrm.InsertRole(roleAdmin)
+
+	user := createRoleAndUser(t, testDB.DB, "password", []models.Role{roleModifier})
+
+	w, body := performLoginRequest(user.Email, "password")
+
+	require.Equal(t, 200, w.Code)
+
+	token, _ := body["data"].(string)
+
+	payload := `{"username": "zpe","email": "zpe@zpe.com","password": "zpe","roles": ["admin"]}`
+
+	req := httptest.NewRequest("POST", "/api/v1/user/", strings.NewReader(payload))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	w = httptest.NewRecorder()
+	setup.RouterTest.ServeHTTP(w, req)
+
+	require.Equal(t, 401, w.Code)
+
+	var b map[string]interface{}
+	json.NewDecoder(w.Body).Decode(&b)
+
+	message, _ := b["error"].(string)
+
+	require.Equal(t, "permission denied, user trying to put a higher role than is permitted", message)
+}
+
+func TestPOSTUserWithInsuficientPermission(t *testing.T) {
+	testDB, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	roleModifier := models.Role{
+		Level: 2,
+		Name:  "modifier",
+	}
+
+	roleWatcher := models.Role{
+		Level: 3,
+		Name:  "watcher",
+	}
+
+	roleOrm := models.NewRoleOrmer(testDB.DB)
+
+	_, _ = roleOrm.InsertRole(roleModifier)
+
+	user := createRoleAndUser(t, testDB.DB, "password", []models.Role{roleWatcher})
+
+	w, body := performLoginRequest(user.Email, "password")
+
+	require.Equal(t, 200, w.Code)
+
+	token, _ := body["data"].(string)
+
+	payload := `{"username": "zpe","email": "zpe@zpe.com","password": "zpe","roles": ["admin"]}`
+
+	req := httptest.NewRequest("POST", "/api/v1/user/", strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 

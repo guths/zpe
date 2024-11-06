@@ -12,6 +12,8 @@ import (
 	"github.com/guths/zpe/datatransfers"
 )
 
+//simple jwt logic, receive a token by a bearer, parse and verify
+
 func AuthMiddleware(c *gin.Context) {
 	token := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
 	if token == "" {
