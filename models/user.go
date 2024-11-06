@@ -12,7 +12,7 @@ type userOrm struct {
 }
 
 type User struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
+	ID        uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	Username  string    `gorm:"type:varchar(100);size:100" json:"username" faker:"username"`
 	Email     string    `gorm:"unique" json:"email" faker:"email"`
 	Password  string    `json:"-"`

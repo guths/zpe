@@ -14,13 +14,29 @@ import (
 	"gorm.io/gorm"
 )
 
-var RouterTest *gin.Engine
+var (
+	RouterTest     *gin.Engine
+	setupOnce      sync.Once
+	testDBInstance *TestDB
+	testDBOnce     sync.Once
+)
 
-var setupOnce sync.Once
+type TestDB struct {
+	DB *gorm.DB
+	mu sync.Mutex
+}
+
+func GetTestDB() *TestDB {
+	testDBOnce.Do(func() {
+		testDBInstance = &TestDB{
+			DB: config.DBManager.GetDB(),
+		}
+	})
+	return testDBInstance
+}
 
 func setupTest() {
 	setupOnce.Do(func() {
-
 		config.InitializeAppConfig()
 		RouterTest = router.InitializeRouter()
 		_ = handlers.InitializeHandler()
@@ -31,35 +47,42 @@ func init() {
 	setupTest()
 }
 
-func WithTransaction(t *testing.T, testFunc func(tx *gorm.DB) error) {
-	db := config.DBManager.GetDB() // Ensure this returns a *gorm.DB instance
-	tx := db.Begin()
+func (tdb *TestDB) CleanupTestDB(t *testing.T) {
+	t.Helper()
+	tdb.mu.Lock()
+	defer tdb.mu.Unlock()
 
+	tx := tdb.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
-			tx.Rollback()
-			t.Fatalf("test panicked: %v", r)
-		} else {
 			tx.Rollback()
 		}
 	}()
 
-	if err := testFunc(tx); err != nil {
-		tx.Rollback()
-		t.Fatalf("test failed: %v", err)
-	} else {
-		tx.Rollback() // Ensure rollback even if test passes
+	tx.Exec("SET FOREIGN_KEY_CHECKS = 0")
+	defer tx.Exec("SET FOREIGN_KEY_CHECKS = 1")
+
+	tables := []string{"users", "roles", "user_roles"}
+	for _, table := range tables {
+		if err := tx.Exec("TRUNCATE TABLE " + table).Error; err != nil {
+			tx.Rollback()
+			t.Fatalf("failed to truncate table %s: %v", table, err)
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		t.Fatalf("failed to commit cleanup: %v", err)
 	}
 }
 
-func CreateAuthUser(roles []models.Role) models.User {
+func CreateAuthUser(roles []models.Role, tx *gorm.DB) models.User {
 	f := factory.NewUserFactory()
 	f.Roles = roles
 	user, _ := f.Create()
 	password := "password"
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	user.Password = string(hashedPassword)
-	orm := models.NewUserOrmer(config.DBManager.GetDB())
+	orm := models.NewUserOrmer(tx)
 	u, _ := orm.InsertUser(*user)
 	return u
 }
